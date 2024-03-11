@@ -4,6 +4,7 @@ Rails.application.routes.draw do
       get :home
       get :help
       get :about
+      get :contact
     end
   end
 end
