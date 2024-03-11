@@ -32,7 +32,7 @@ gem "bootstrap-sass",  "3.4.1"
 gem "sassc-rails",     "2.1.2"
 gem "pg"
 gem "bcrypt"
-
+gem "pry-byebug"
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem "kredis"
 
