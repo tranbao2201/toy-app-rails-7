@@ -9,7 +9,8 @@ class SessionsController < ApplicationController
             log_in user
             params[:session][:remember_me] == "1" ? remember(user) : forget(user)
             remember user
-            redirect_to user
+            previous_url = session[:previous_url]
+            redirect_to previous_url || user
         else
             flash[:danger] = "Invalid email or password"
             render :new, status: :unprocessable_entity

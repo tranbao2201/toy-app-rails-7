@@ -1,5 +1,12 @@
 class UsersController < ApplicationController
-  before_action :find_user, only: [:show, :edit, :update]
+  before_action :find_user, :require_log_in!,  only: [:show, :edit, :update, :destroy]
+  before_action :require_log_in!,  only: [:show, :edit, :update, :index]
+  before_action :correct_user, only: [:edit, :update]
+  before_action :check_admin_role, only: :destroy
+
+  def index
+    @users = User.paginate(page: params[:page])
+  end
 
   
   def show
@@ -26,11 +33,17 @@ class UsersController < ApplicationController
   def update
     if @user.update(user_params)
       flash[:success] = "Update profile success!"
-      redirect_to edit_user_path(@user)
+      redirect_to @user
     else
       flash[:danger] = "Update profile errors"
       render :edit, status: :unprocessable_entity
     end
+  end
+
+  def destroy
+    @user.destroy
+    flash[:success] = "User has been deleted"
+    redirect_to users_url
   end
 
   private
@@ -41,5 +54,24 @@ class UsersController < ApplicationController
 
   def user_params
     params.require(:user).permit(:name, :email, :password, :password_confirmation)
+  end
+
+  def require_log_in!
+    unless logged_in?
+      store_location
+      flash[:warning] = "Please loggin"
+      redirect_to new_session_url
+    end
+  end
+
+  def correct_user
+    if same_user? @user
+      flash[:warning] = "Not have permission to access"
+      redirect_to root_url
+    end
+  end
+
+  def check_admin_role
+    redirect_to root_url unless user.admin?
   end
 end
