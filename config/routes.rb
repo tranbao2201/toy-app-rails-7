@@ -8,11 +8,13 @@ Rails.application.routes.draw do
       get :contact
     end
   end
-  resources :users
+  resources :users 
   resources :sessions, except: [:destroy] do
     collection do
       delete :destroy
     end
   end
   resource :account_activations, only: [:edit]
+  resource :reset_passwords
+  resources :microposts
 end

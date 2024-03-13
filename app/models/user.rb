@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-    attr_accessor :remember_token, :activation_token
+    attr_accessor :remember_token, :activation_token, :reset_token
 
     VALID_EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i
     
@@ -12,7 +12,13 @@ class User < ApplicationRecord
     validates :password_confirmation, presence: true
     
     before_save { email.downcase! }
-    before_save :create_activation_digest
+    after_save :create_activation_digest
+
+    has_many :microposts, dependent: :destroy
+
+    default_scope -> { order(created_at: :desc) }
+
+    CREATE_DIGEST_ATTRIBUTE = %i(activation reset)
 
     class << self
         def digest token
@@ -25,15 +31,21 @@ class User < ApplicationRecord
         end
     end
 
+    #create method create_activation_digest, create_reset_digest
+    CREATE_DIGEST_ATTRIBUTE.each do |attribute|
+        attribute_digest = "#{attribute}_digest"
+        attribute_token = "#{attribute}_token"
+        define_method("create_#{attribute_digest}") do
+            self._assign_attribute(attribute_token, User.new_token)
+            update_column(attribute_digest, User.digest(attribute_token))
+            update_column(:reset_send_at, Time.zone.now) if attribute == :reset
+        end
+    end
+
     def remember 
         self.remember_token = User.new_token
         update_column(:remember_digest, User.digest(remember_token))
         remember_digest
-    end
-
-    def create_activation_digest
-        self.activation_token = User.new_token
-        self.activation_digest = User.digest(activation_token)
     end
 
     def session_token
@@ -52,10 +64,18 @@ class User < ApplicationRecord
     end
 
     def send_activation_email
-        UserMailer.acount_activation(self.diliver_later)
+        UserMailer.acount_activation(self).deliver_now
     end
 
     def activate_account
         update(is_activated: true, activated_at: Time.zone.now)
+    end
+
+    def send_password_reset_email
+        UserMailer.password_reset(self).deliver_now
+    end
+
+    def reset_is_expired?
+        reset_send_at < 2.hours.ago
     end
 end

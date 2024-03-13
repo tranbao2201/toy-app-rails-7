@@ -10,6 +10,7 @@ class UsersController < ApplicationController
 
   
   def show
+    @microposts = @user.microposts.paginate(page: params[:page])
   end
   
   def new
@@ -45,7 +46,7 @@ class UsersController < ApplicationController
     flash[:success] = "User has been deleted"
     redirect_to users_url
   end
-
+  
   private
 
   def find_user
@@ -56,14 +57,6 @@ class UsersController < ApplicationController
     params.require(:user).permit(:name, :email, :password, :password_confirmation)
   end
 
-  def require_log_in!
-    unless logged_in?
-      store_location
-      flash[:warning] = "Please loggin"
-      redirect_to new_session_url
-    end
-  end
-
   def correct_user
     unless same_user? @user
       flash[:warning] = "Not have permission to access"
@@ -72,6 +65,6 @@ class UsersController < ApplicationController
   end
 
   def check_admin_role
-    redirect_to root_url unless user.admin?
+    redirect_to root_url unless current_user.admin?
   end
 end

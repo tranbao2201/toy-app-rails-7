@@ -29,7 +29,8 @@ gem "faker"
 gem "will_paginate",            "3.3.1"
 gem "bootstrap-will_paginate",  "1.0.0"
 gem "dotenv"
-
+gem "active_storage_validations", "0.9.8"
+gem "image_processing", "1.12.2"
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ mswin mswin64 mingw x64_mingw jruby ]
 
@@ -59,4 +60,8 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+end
+
+group :production do
+  gem "aws-sdk-s3", "1.114.0", require: false
 end
