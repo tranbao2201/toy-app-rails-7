@@ -7,7 +7,7 @@ class User < ApplicationRecord
     
     validates :name, presence: true, length: { maximum: 50 }
     validates :email, presence: true, format: { with: VALID_EMAIL_REGEX },
-    length: { maximum: 50 }, uniqueness: true
+        length: { maximum: 50 }, uniqueness: true
     validates :password, presence: true, length: { minimum: 6 }, confirmation: { case_sensitive: true }
     validates :password_confirmation, presence: true
     
@@ -15,8 +15,13 @@ class User < ApplicationRecord
     after_save :create_activation_digest
 
     has_many :microposts, dependent: :destroy
-
+    has_many :active_relationships, class_name: Relationship.name, foreign_key: :follower_id
+    has_many :followings, through: :active_relationships, source: :followed
+    has_many :passsive_relationships, class_name: Relationship.name, foreign_key: :followed_id
+    has_many :followers, through: :passsive_relationships, source: :follower
     default_scope -> { order(created_at: :desc) }
+
+    scope :by_ids, -> ids { where(id: ids) }
 
     CREATE_DIGEST_ATTRIBUTE = %i(activation reset)
 
@@ -78,4 +83,22 @@ class User < ApplicationRecord
     def reset_is_expired?
         reset_send_at < 2.hours.ago
     end
+
+    def follow user
+        followings << user
+    end
+
+    def unfollow user
+        active_relationships.find_by(followed: user)&.destroy
+    end
+
+    def following? user
+        followings.by_ids(user.id).exists?
+    end
+
+    def feed
+        user_ids = (following_ids << id)
+        Micropost.by_user_ids(user_ids)
+    end
+
 end

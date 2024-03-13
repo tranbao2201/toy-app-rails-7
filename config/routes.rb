@@ -8,7 +8,11 @@ Rails.application.routes.draw do
       get :contact
     end
   end
-  resources :users 
+  resources :users do
+    member do
+      get :followings, :followers
+    end
+  end
   resources :sessions, except: [:destroy] do
     collection do
       delete :destroy
@@ -17,4 +21,5 @@ Rails.application.routes.draw do
   resource :account_activations, only: [:edit]
   resource :reset_passwords
   resources :microposts
+  resources :relationships
 end

@@ -1,4 +1,3 @@
-alert("abc");
 document.addEventListener("turbo:load", function () {
 	document.addEventListener("change", function (event) {
 		let image_upload = document.querySelector("#micropost_image");
