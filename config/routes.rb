@@ -14,4 +14,5 @@ Rails.application.routes.draw do
       delete :destroy
     end
   end
+  resource :account_activations, only: [:edit]
 end

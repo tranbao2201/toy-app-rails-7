@@ -19,9 +19,9 @@ class UsersController < ApplicationController
   def create
     @user = User.new(user_params)
     if @user.save
-      flash[:success] = "Welcome to the Sample App!"
-      log_in @user
-      redirect_to @user
+      @user.send_activation_email
+      flash[:info] = "Please check your email to activate your account"
+      redirect_to root_url
     else
       render :new, status: :unprocessable_entity
     end
@@ -65,7 +65,7 @@ class UsersController < ApplicationController
   end
 
   def correct_user
-    if same_user? @user
+    unless same_user? @user
       flash[:warning] = "Not have permission to access"
       redirect_to root_url
     end
